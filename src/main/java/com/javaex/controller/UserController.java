@@ -19,7 +19,6 @@ public class UserController {
 	public List<UserVo> getUserList(){
 		System.out.println("UserController.getUserList()");
 		
-		
 		return userService.exeSelectUserList();
 	}
 }
