@@ -47,6 +47,11 @@ jobs:
             # 기존 컨테이너 및 네트워크 정리
             sudo docker stop mysql 2>/dev/null || true
             sudo docker rm mysql 2>/dev/null || true
+
+            # 기존 애플리케이션 컨테이너 정리
+            sudo docker stop triplog 2>/dev/null || true
+            sudo docker rm triplog 2>/dev/null || true
+            
             sudo docker network rm triplog-network 2>/dev/null || true
 
             # Docker 네트워크 생성
@@ -70,7 +75,7 @@ jobs:
             --network triplog-network \
             -p 3306:3306 \
             -e MYSQL_ROOT_PASSWORD='${{ secrets.MYSQL_ROOT_PASSWORD }}' \
-            -e MYSQL_DATABASE='triplog_db' \
+            -e MYSQL_DATABASE='${{ secrets.MYSQL_DATABASE }}' \
             -e MYSQL_USER='${{ secrets.MYSQL_USER }}' \
             -e MYSQL_PASSWORD='${{ secrets.MYSQL_PASSWORD }}' \
             -v /home/ec2-user/mysql-data:/var/lib/mysql \
@@ -91,9 +96,6 @@ jobs:
             #!/bin/bash
             set -e
 
-            # 기존 애플리케이션 컨테이너 정리
-            sudo docker stop triplog 2>/dev/null || true
-            sudo docker rm triplog 2>/dev/null || true
 
             # 필요한 디렉토리 생성
             sudo mkdir -p /home/ec2-user/upload
