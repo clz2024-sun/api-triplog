@@ -41,22 +41,38 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # 스크립트 시작 부분에 셸 옵션 추가 (에러 처리 및 디버깅)
-            set -e
-            
-            # 기존 MySQL 컨테이너 정리
-            sudo docker stop mysql || true
-            sudo docker rm mysql || true
+            # 쉘 및 디버그 옵션 설정
+            #!/bin/bash
+            set -x  # 실행되는 명령어 출력
+            set -e  # 오류 발생 시 스크립트 중단
 
-            # Docker 네트워크 존재 확인 및 생성
-            if ! sudo docker network ls | grep -q triplog-network; then
+            # 현재 환경 확인
+            echo "Current user: $(whoami)"
+            echo "Home directory: $HOME"
+            echo "Current directory: $(pwd)"
+
+            # Docker 설치 및 서비스 확인
+            docker --version
+            sudo docker --version
+            systemctl status docker
+
+            # 기존 컨테이너 및 네트워크 상태 확인
+            sudo docker ps -a
+            sudo docker network ls
+
+            # 기존 MySQL 컨테이너 정리
+            sudo docker container stop mysql || true
+            sudo docker container rm mysql || true
+
+            # Docker 네트워크 확인 및 생성
+            if ! sudo docker network inspect triplog-network; then
               sudo docker network create triplog-network
             fi
 
             # 필요한 디렉토리 생성
             sudo mkdir -p /home/ec2-user/mysql-data
 
-            # MySQL 커스텀 설정 파일 생성
+            # MySQL 설정 파일 생성
             sudo tee /home/ec2-user/mysql-config.cnf > /dev/null << EOF
             [mysqld]
             bind-address = 0.0.0.0
@@ -65,18 +81,22 @@ jobs:
             collation-server = utf8mb4_unicode_ci
             EOF
 
-            # MySQL 컨테이너 실행 (데이터 영구 보존)
+            # MySQL 컨테이너 실행 (상세 로깅)
             sudo docker run -d \
             --name mysql \
             --network triplog-network \
             -p 3306:3306 \
-            -e MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }} \
-            -e MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }} \
-            -e MYSQL_USER=${{ secrets.MYSQL_USER }} \
-            -e MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }} \
+            -e MYSQL_ROOT_PASSWORD="${{ secrets.MYSQL_ROOT_PASSWORD }}" \
+            -e MYSQL_DATABASE="${{ secrets.MYSQL_DATABASE }}" \
+            -e MYSQL_USER="${{ secrets.MYSQL_USER }}" \
+            -e MYSQL_PASSWORD="${{ secrets.MYSQL_PASSWORD }}" \
             -v /home/ec2-user/mysql-data:/var/lib/mysql \
             -v /home/ec2-user/mysql-config.cnf:/etc/mysql/conf.d/custom.cnf \
             mysql:8.0.38
+
+            # 컨테이너 상태 확인
+            sudo docker ps
+            sudo docker logs mysql
 
   deploy-application:
     needs: deploy-mysql
@@ -89,15 +109,13 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # 스크립트 시작 부분에 셸 옵션 추가 (에러 처리 및 디버깅)
+            #!/bin/bash
+            set -x
             set -e
-            
-            # 필요한 디렉토리 생성
-            sudo mkdir -p /home/ec2-user/upload
 
             # 기존 애플리케이션 컨테이너 정리
-            sudo docker stop triplog || true
-            sudo docker rm triplog || true
+            sudo docker container stop triplog || true
+            sudo docker container rm triplog || true
 
             # 애플리케이션 컨테이너 실행
             sudo docker run -d \
@@ -105,7 +123,11 @@ jobs:
             --network triplog-network \
             -p 9000:9000 \
             -e DATABASE_URL=jdbc:mysql://mysql:3306/triplog_db?serverTimezone=UTC&useUnicode=yes&characterEncoding=UTF-8 \
-            -e DATABASE_USERNAME=${{ secrets.DATABASE_USERNAME }} \
-            -e DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }} \
+            -e DATABASE_USERNAME="${{ secrets.DATABASE_USERNAME }}" \
+            -e DATABASE_PASSWORD="${{ secrets.DATABASE_PASSWORD }}" \
             -v /home/ec2-user/upload:/app/upload \
             clz2024sun/triplog:latest
+
+            # 컨테이너 상태 확인
+            sudo docker ps
+            sudo docker logs triplog
