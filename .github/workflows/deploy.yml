@@ -83,13 +83,13 @@ jobs:
             # 기존 애플리케이션 컨테이너 정리
             sudo docker stop triplog || true
             sudo docker rm triplog || true
-            
+
             # 애플리케이션 컨테이너 실행
             sudo docker run -d \
               --name triplog \
               -p 9000:9000 \
               --network triplog-network \
-              -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
+              -e DATABASE_URL=mysql://triplog-network:3306/triplog_db?serverTimezone=UTC&useUnicode=yes&characterEncoding=UTF-8 \
               -e DATABASE_USERNAME=${{ secrets.DATABASE_USERNAME }} \
               -e DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }} \
               -v /home/ec2-user/upload:/app/upload \
