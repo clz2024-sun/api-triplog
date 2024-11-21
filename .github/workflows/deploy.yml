@@ -65,7 +65,7 @@ jobs:
             --network triplog-network \
             -p 3306:3306 \
             -e MYSQL_ROOT_PASSWORD='${{ secrets.MYSQL_ROOT_PASSWORD }}' \
-            -e MYSQL_DATABASE='${{ secrets.MYSQL_DATABASE }}' \
+            -e MYSQL_DATABASE='triplog_db' \
             -e MYSQL_USER='${{ secrets.MYSQL_USER }}' \
             -e MYSQL_PASSWORD='${{ secrets.MYSQL_PASSWORD }}' \
             -v /home/ec2-user/mysql-data:/var/lib/mysql \
