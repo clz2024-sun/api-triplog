@@ -49,8 +49,10 @@ jobs:
             sudo docker rm mysql 2>/dev/null || true
 
             # Docker 네트워크가 이미 존재하는지 확인하고 삭제
-            if sudo docker network inspect triplog-network >/dev/null 2>&1; then
-              sudo docker network rm triplog-network
+            if ! sudo docker network inspect triplog-network >/dev/null 2>&1; then
+              sudo docker network create triplog-network
+            else
+              echo "triplog-network already exists"
             fi
 
             # Docker 네트워크 생성
