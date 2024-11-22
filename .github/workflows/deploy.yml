@@ -100,6 +100,9 @@ jobs:
             # 필요한 디렉토리 생성
             sudo mkdir -p /home/ec2-user/upload
 
+            # 도커 허브에서 최신 이미지 가져오기
+            sudo docker pull clz2024sun/triplog:latest
+
             # 애플리케이션 컨테이너 실행
             sudo docker run -d \
             --name triplog \
