@@ -10,6 +10,6 @@ public class HomeController implements ErrorController{
     @GetMapping({"/", "/error"})
     public String redirectRoot() {
         System.out.println("HomeController()");
-        return "index.htmlaaaa";
+        return "index.html";
     }
 }
