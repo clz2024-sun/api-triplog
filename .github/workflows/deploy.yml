@@ -107,7 +107,7 @@ jobs:
             sudo docker run -d \
             --name triplog \
             --network triplog-network \
-            -p 443:443 \
+            -p 80:80 \
             -e DATABASE_URL='jdbc:mysql://mysql:3306/triplog_db?serverTimezone=UTC&useUnicode=yes&characterEncoding=UTF-8' \
             -e DATABASE_USERNAME='${{ secrets.DATABASE_USERNAME }}' \
             -e DATABASE_PASSWORD='${{ secrets.DATABASE_PASSWORD }}' \
