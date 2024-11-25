@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class HomeController implements ErrorController{
 	
 	
+	
     @GetMapping({"/", "/error"})
     public String redirectRoot() {
         System.out.println("HomeController()");
