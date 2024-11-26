@@ -20,6 +20,7 @@ public class UserController {
 		System.out.println("UserController.getUserList()");
 		
 		
+		
 		return userService.exeSelectUserList();
 	}
 }
